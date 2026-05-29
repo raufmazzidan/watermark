@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Watermark Tool</title>
+    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f4f3ef;
+        color: #1a1a18;
+        min-height: 100vh;
+        padding: 2rem 1rem;
+      }
+
+      h1 {
+        font-size: 22px;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        color: #1a1a18;
+      }
+
+      .container {
+        max-width: 720px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+      }
+
+      .panel {
+        background: #fff;
+        border: 0.5px solid rgba(0, 0, 0, 0.15);
+        border-radius: 12px;
+        padding: 1.25rem;
+      }
+
+      .panel-title {
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #888780;
+        margin-bottom: 1rem;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .row:last-child {
+        margin-bottom: 0;
+      }
+
+      label {
+        font-size: 13px;
+        color: #5f5e5a;
+        min-width: 82px;
+      }
+
+      input[type="text"] {
+        flex: 1;
+        height: 36px;
+        border: 0.5px solid rgba(0, 0, 0, 0.25);
+        border-radius: 8px;
+        background: #fff;
+        color: #1a1a18;
+        font-size: 14px;
+        padding: 0 10px;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+
+      input[type="text"]:focus {
+        border-color: rgba(0, 0, 0, 0.45);
+      }
+
+      input[type="range"] {
+        flex: 1;
+        accent-color: #444441;
+        cursor: pointer;
+      }
+
+      select {
+        flex: 1;
+        height: 36px;
+        border: 0.5px solid rgba(0, 0, 0, 0.25);
+        border-radius: 8px;
+        background: #fff;
+        color: #1a1a18;
+        font-size: 14px;
+        padding: 0 10px;
+        outline: none;
+        cursor: pointer;
+      }
+
+      .val {
+        font-size: 13px;
+        font-weight: 500;
+        color: #1a1a18;
+        min-width: 40px;
+        text-align: right;
+      }
+
+      .color-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+      }
+
+      input[type="color"] {
+        width: 36px;
+        height: 36px;
+        padding: 2px;
+        border: 0.5px solid rgba(0, 0, 0, 0.25);
+        border-radius: 8px;
+        cursor: pointer;
+        flex: none;
+        background: #fff;
+      }
+
+      .hex-input {
+        flex: 1;
+        height: 36px;
+        border: 0.5px solid rgba(0, 0, 0, 0.25);
+        border-radius: 8px;
+        background: #fff;
+        color: #1a1a18;
+        font-size: 13px;
+        font-family: "Courier New", monospace;
+        padding: 0 10px;
+        outline: none;
+      }
+
+      .drop-zone {
+        border: 1.5px dashed rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+        min-height: 160px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      .drop-zone:hover {
+        background: #f4f3ef;
+      }
+
+      .drop-zone svg {
+        color: #b4b2a9;
+      }
+
+      .drop-zone p {
+        font-size: 14px;
+        color: #5f5e5a;
+      }
+
+      .drop-zone small {
+        font-size: 12px;
+        color: #888780;
+      }
+
+      .canvas-wrap {
+        background: #f4f3ef;
+        border-radius: 12px;
+        padding: 1rem;
+      }
+
+      canvas {
+        width: 100%;
+        border-radius: 8px;
+        display: block;
+      }
+
+      .btn-row {
+        display: flex;
+        gap: 8px;
+      }
+
+      button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 40px;
+        padding: 0 1.25rem;
+        border: 0.5px solid rgba(0, 0, 0, 0.25);
+        border-radius: 8px;
+        background: transparent;
+        color: #1a1a18;
+        font-size: 14px;
+        font-family: inherit;
+        cursor: pointer;
+        transition:
+          background 0.12s,
+          transform 0.08s;
+      }
+
+      button:hover {
+        background: #f4f3ef;
+      }
+      button:active {
+        transform: scale(0.98);
+      }
+
+      #download-btn {
+        flex: 1;
+        background: #1a1a18;
+        color: #fff;
+        border-color: #1a1a18;
+      }
+
+      #download-btn:hover {
+        background: #2c2c2a;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .size-info {
+        display: flex;
+        gap: 12px;
+        margin-top: 0.75rem;
+      }
+
+      .size-card {
+        flex: 1;
+        background: #f4f3ef;
+        border-radius: 8px;
+        padding: 10px 12px;
+      }
+
+      .size-card .sc-label {
+        font-size: 11px;
+        color: #888780;
+        margin-bottom: 2px;
+      }
+
+      .size-card .sc-val {
+        font-size: 15px;
+        font-weight: 500;
+        color: #1a1a18;
+      }
+
+      .size-card .sc-dim {
+        font-size: 11px;
+        color: #888780;
+        margin-top: 1px;
+      }
+
+      .saving-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        background: #eaf3de;
+        color: #3b6d11;
+        margin-left: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Image Watermark Tool</h1>
+
+      <!-- Upload Panel -->
+      <div class="panel" id="upload-panel">
+        <div class="panel-title">Upload image</div>
+        <div class="drop-zone" id="drop-zone">
+          <svg
+            width="36"
+            height="36"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21 15 16 10 5 21" />
+          </svg>
+          <p>Drop image here or click to browse</p>
+          <small>PNG, JPG, WEBP, HEIC supported</small>
+        </div>
+        <input
+          type="file"
+          id="file-input"
+          accept="image/*,.heic,.heif"
+          style="display: none"
+        />
+        <div
+          id="heic-notice"
+          style="
+            display: none;
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: #faeeda;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #854f0b;
+          "
+        >
+          Converting HEIC image, please wait…
+        </div>
+      </div>
+
+      <!-- Controls Panel -->
+      <div class="panel hidden" id="controls-panel">
+        <div class="panel-title">Watermark settings</div>
+
+        <div class="row">
+          <label>Text</label>
+          <input
+            type="text"
+            id="wm-text"
+            placeholder="Your watermark text…"
+            value="© My Watermark"
+          />
+        </div>
+
+        <div class="row">
+          <label>Font size</label>
+          <input type="range" id="font-size" min="10" max="120" value="36" />
+          <span class="val" id="font-size-val">36px</span>
+        </div>
+
+        <div class="row">
+          <label>Opacity</label>
+          <input type="range" id="opacity" min="5" max="100" value="40" />
+          <span class="val" id="opacity-val">40%</span>
+        </div>
+
+        <div class="row">
+          <label>Rotation</label>
+          <input type="range" id="rotation" min="-90" max="90" value="-30" />
+          <span class="val" id="rotation-val">-30°</span>
+        </div>
+
+        <div class="row">
+          <label>Color</label>
+          <div class="color-wrap">
+            <input type="color" id="wm-color" value="#ffffff" />
+            <input
+              type="text"
+              class="hex-input"
+              id="hex-input"
+              value="#ffffff"
+              maxlength="7"
+            />
+          </div>
+        </div>
+
+        <div class="row">
+          <label>Style</label>
+          <select id="wm-style">
+            <option value="tile">Tile (repeat)</option>
+            <option value="center">Center</option>
+            <option value="corner-br">Bottom-right corner</option>
+            <option value="corner-bl">Bottom-left corner</option>
+            <option value="corner-tr">Top-right corner</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <label>Font</label>
+          <select id="wm-font">
+            <option value="sans-serif">Sans-serif</option>
+            <option value="serif">Serif</option>
+            <option value="monospace">Monospace</option>
+            <option value="cursive">Cursive</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Compression Panel -->
+      <div class="panel hidden" id="compress-panel">
+        <div class="panel-title">Compression</div>
+
+        <div class="row">
+          <label>Format</label>
+          <select id="out-format">
+            <option value="jpeg">JPEG</option>
+            <option value="png">PNG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+
+        <div class="row" id="quality-row">
+          <label>Quality</label>
+          <input type="range" id="quality" min="1" max="100" value="85" />
+          <span class="val" id="quality-val">85%</span>
+        </div>
+
+        <div class="row">
+          <label>Max width</label>
+          <select id="max-width">
+            <option value="0">Original</option>
+            <option value="3840">4K (3840px)</option>
+            <option value="1920">FHD (1920px)</option>
+            <option value="1280">HD (1280px)</option>
+            <option value="800">Web (800px)</option>
+            <option value="400">Thumb (400px)</option>
+          </select>
+        </div>
+
+        <div class="size-info" id="size-info" style="display: none">
+          <div class="size-card">
+            <div class="sc-label">Original</div>
+            <div class="sc-val" id="orig-size">—</div>
+            <div class="sc-dim" id="orig-dim">—</div>
+          </div>
+          <div class="size-card">
+            <div class="sc-label">
+              Output
+              <span
+                class="saving-badge"
+                id="saving-badge"
+                style="display: none"
+              ></span>
+            </div>
+            <div class="sc-val" id="out-size">—</div>
+            <div class="sc-dim" id="out-dim">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel canvas-wrap hidden" id="preview-panel">
+        <div class="panel-title" style="margin-bottom: 0.75rem">Preview</div>
+        <canvas id="preview"></canvas>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="btn-row hidden" id="btn-row">
+        <button id="reset-btn">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="1 4 1 10 7 10" />
+            <path d="M3.51 15a9 9 0 1 0 .49-3.87" />
+          </svg>
+          Change image
+        </button>
+        <button id="download-btn">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Download with watermark
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const dropZone = document.getElementById("drop-zone");
+      const fileInput = document.getElementById("file-input");
+      const canvas = document.getElementById("preview");
+      const ctx = canvas.getContext("2d");
+      let img = null;
+      let origFileSize = 0;
+
+      function fmtBytes(b) {
+        if (b === 0) return "—";
+        if (b < 1024) return b + " B";
+        if (b < 1024 * 1024) return (b / 1024).toFixed(1) + " KB";
+        return (b / (1024 * 1024)).toFixed(2) + " MB";
+      }
+
+      function getMaxWidth() {
+        return +document.getElementById("max-width").value;
+      }
+      function getQuality() {
+        return +document.getElementById("quality").value / 100;
+      }
+      function getFormat() {
+        return document.getElementById("out-format").value;
+      }
+
+      function updateOrigInfo() {
+        if (!img) return;
+        document.getElementById("size-info").style.display = "flex";
+        document.getElementById("orig-size").textContent =
+          fmtBytes(origFileSize);
+        document.getElementById("orig-dim").textContent =
+          img.naturalWidth + " × " + img.naturalHeight + "px";
+        updateOutInfo();
+      }
+
+      function updateOutInfo() {
+        if (!img) return;
+        const fmt = getFormat();
+        const mw = getMaxWidth();
+        let w = img.naturalWidth,
+          h = img.naturalHeight;
+        if (mw > 0 && w > mw) {
+          h = Math.round((h * mw) / w);
+          w = mw;
+        }
+        document.getElementById("out-dim").textContent = w + " × " + h + "px";
+
+        const tmp = document.createElement("canvas");
+        tmp.width = w;
+        tmp.height = h;
+        const tc = tmp.getContext("2d");
+        tc.drawImage(img, 0, 0, w, h);
+        const mime =
+          fmt === "png"
+            ? "image/png"
+            : fmt === "webp"
+              ? "image/webp"
+              : "image/jpeg";
+        const q = fmt === "png" ? undefined : getQuality();
+        const dataUrl = tmp.toDataURL(mime, q);
+        const base64 = dataUrl.split(",")[1];
+        const outBytes = Math.round(base64.length * 0.75);
+        document.getElementById("out-size").textContent = fmtBytes(outBytes);
+
+        const badge = document.getElementById("saving-badge");
+        if (origFileSize > 0 && outBytes < origFileSize) {
+          const pct = Math.round((1 - outBytes / origFileSize) * 100);
+          badge.textContent = "-" + pct + "%";
+          badge.style.display = "inline-block";
+        } else {
+          badge.style.display = "none";
+        }
+        document.getElementById("quality-row").style.display =
+          fmt === "png" ? "none" : "flex";
+      }
+
+      // Upload triggers
+      dropZone.addEventListener("click", () => fileInput.click());
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.style.background = "#eaf3de";
+      });
+      dropZone.addEventListener("dragleave", () => {
+        dropZone.style.background = "";
+      });
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.style.background = "";
+        loadFile(e.dataTransfer.files[0]);
+      });
+      fileInput.addEventListener("change", (e) => loadFile(e.target.files[0]));
+
+      function isHeic(file) {
+        return (
+          file.type === "image/heic" ||
+          file.type === "image/heif" ||
+          /\.(heic|heif)$/i.test(file.name)
+        );
+      }
+
+      function loadFile(file) {
+        if (!file) return;
+        if (!file.type.startsWith("image/") && !isHeic(file)) return;
+
+        const notice = document.getElementById("heic-notice");
+
+        if (isHeic(file)) {
+          notice.style.display = "block";
+          heic2any({ blob: file, toType: "image/jpeg", quality: 0.92 })
+            .then((blob) => {
+              notice.style.display = "none";
+              readBlob(blob);
+            })
+            .catch((err) => {
+              notice.style.display = "none";
+              alert("Could not convert HEIC file: " + err.message);
+            });
+        } else {
+          readBlob(file);
+        }
+      }
+
+      function readBlob(blob) {
+        origFileSize = blob.size || 0;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          img = new Image();
+          img.onload = () => {
+            document.getElementById("upload-panel").classList.add("hidden");
+            document
+              .getElementById("controls-panel")
+              .classList.remove("hidden");
+            document
+              .getElementById("compress-panel")
+              .classList.remove("hidden");
+            document.getElementById("preview-panel").classList.remove("hidden");
+            document.getElementById("btn-row").classList.remove("hidden");
+            updateOrigInfo();
+            draw();
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(blob);
+      }
+
+      function getSettings() {
+        return {
+          text: document.getElementById("wm-text").value || "© Watermark",
+          fontSize: +document.getElementById("font-size").value,
+          opacity: +document.getElementById("opacity").value / 100,
+          rotation:
+            (+document.getElementById("rotation").value * Math.PI) / 180,
+          color: document.getElementById("wm-color").value,
+          style: document.getElementById("wm-style").value,
+          font: document.getElementById("wm-font").value,
+        };
+      }
+
+      function draw() {
+        if (!img) return;
+        const s = getSettings();
+        const mw = getMaxWidth();
+        let W = img.naturalWidth,
+          H = img.naturalHeight;
+        if (mw > 0 && W > mw) {
+          H = Math.round((H * mw) / W);
+          W = mw;
+        }
+        canvas.width = W;
+        canvas.height = H;
+        ctx.drawImage(img, 0, 0, W, H);
+
+        ctx.save();
+        ctx.globalAlpha = s.opacity;
+        ctx.font = `${s.fontSize}px ${s.font}`;
+        ctx.fillStyle = s.color;
+        ctx.textBaseline = "middle";
+
+        const tw = ctx.measureText(s.text).width;
+        const th = s.fontSize;
+
+        if (s.style === "tile") {
+          const pad = tw * 0.6;
+          const stepX = tw + pad;
+          const stepY = th * 3;
+          const diagLen = Math.sqrt(W * W + H * H);
+          ctx.translate(W / 2, H / 2);
+          ctx.rotate(s.rotation);
+          const cols = Math.ceil(diagLen / stepX) + 2;
+          const rows = Math.ceil(diagLen / stepY) + 2;
+          for (let r = -rows; r <= rows; r++) {
+            for (let c = -cols; c <= cols; c++) {
+              ctx.fillText(s.text, c * stepX - tw / 2, r * stepY);
+            }
+          }
+        } else if (s.style === "center") {
+          ctx.translate(W / 2, H / 2);
+          ctx.rotate(s.rotation);
+          ctx.fillText(s.text, -tw / 2, 0);
+        } else {
+          const margin = 20;
+          let x, y;
+          if (s.style === "corner-br") {
+            x = W - tw - margin;
+            y = H - th - margin;
+          } else if (s.style === "corner-bl") {
+            x = margin;
+            y = H - th - margin;
+          } else {
+            x = W - tw - margin;
+            y = th + margin;
+          }
+          ctx.translate(x + tw / 2, y + th / 2);
+          ctx.rotate(s.rotation);
+          ctx.fillText(s.text, -tw / 2, 0);
+        }
+        ctx.restore();
+      }
+
+      // Live update compression controls
+      ["out-format", "quality", "max-width"].forEach((id) => {
+        document.getElementById(id).addEventListener("input", () => {
+          if (id === "quality")
+            document.getElementById("quality-val").textContent =
+              document.getElementById("quality").value + "%";
+          draw();
+          updateOutInfo();
+        });
+      });
+
+      // Live update on watermark control change
+      [
+        "wm-text",
+        "font-size",
+        "opacity",
+        "rotation",
+        "wm-color",
+        "wm-style",
+        "wm-font",
+      ].forEach((id) => {
+        document.getElementById(id).addEventListener("input", () => {
+          if (id === "font-size")
+            document.getElementById("font-size-val").textContent =
+              document.getElementById("font-size").value + "px";
+          if (id === "opacity")
+            document.getElementById("opacity-val").textContent =
+              document.getElementById("opacity").value + "%";
+          if (id === "rotation")
+            document.getElementById("rotation-val").textContent =
+              document.getElementById("rotation").value + "°";
+          if (id === "wm-color")
+            document.getElementById("hex-input").value =
+              document.getElementById("wm-color").value;
+          draw();
+          updateOutInfo();
+        });
+      });
+
+      // Hex text input sync
+      document
+        .getElementById("hex-input")
+        .addEventListener("input", function () {
+          if (/^#[0-9a-fA-F]{6}$/.test(this.value)) {
+            document.getElementById("wm-color").value = this.value;
+            draw();
+          }
+        });
+
+      // Reset
+      document.getElementById("reset-btn").addEventListener("click", () => {
+        img = null;
+        origFileSize = 0;
+        document.getElementById("upload-panel").classList.remove("hidden");
+        document.getElementById("controls-panel").classList.add("hidden");
+        document.getElementById("compress-panel").classList.add("hidden");
+        document.getElementById("preview-panel").classList.add("hidden");
+        document.getElementById("btn-row").classList.add("hidden");
+        document.getElementById("size-info").style.display = "none";
+        fileInput.value = "";
+      });
+
+      // Download with compression applied
+      document.getElementById("download-btn").addEventListener("click", () => {
+        draw();
+        const fmt = getFormat();
+        const mime =
+          fmt === "png"
+            ? "image/png"
+            : fmt === "webp"
+              ? "image/webp"
+              : "image/jpeg";
+        const q = fmt === "png" ? undefined : getQuality();
+        const ext = fmt === "jpeg" ? "jpg" : fmt;
+        const link = document.createElement("a");
+        link.download = "watermarked." + ext;
+        link.href = canvas.toDataURL(mime, q);
+        link.click();
+      });
+    </script>
+  </body>
+</html>
